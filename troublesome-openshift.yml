@@ -1,0 +1,172 @@
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 307cd559b999da77cbb31dea6f638545c99cfdf0
+    app.quarkus.io/build-timestamp: 2022-09-20 - 14:31:32 +0000
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: openshift-quickstart
+spec:
+  replicas: 1
+  selector:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  template:
+    metadata:
+      annotations:
+        app.openshift.io/vcs-url: <<unknown>>
+        app.quarkus.io/commit-id: 307cd559b999da77cbb31dea6f638545c99cfdf0
+        app.quarkus.io/build-timestamp: 2022-09-20 - 14:31:32 +0000
+      labels:
+        app.kubernetes.io/name: openshift-quickstart
+        app.kubernetes.io/version: 1.0.0-SNAPSHOT
+        app.openshift.io/runtime: quarkus
+    spec:
+      containers:
+        - env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: JAVA_APP_JAR
+              value: /deployments/openshift-quickstart-1.0.0-SNAPSHOT-runner.jar
+          image: mvavrik/openshift-quickstart:1.0.0-SNAPSHOT
+          imagePullPolicy: Always
+          name: openshift-quickstart
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+      serviceAccountName: openshift-quickstart
+  triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - openshift-quickstart
+        from:
+          kind: ImageStreamTag
+          name: openshift-quickstart:1.0.0-SNAPSHOT
+      type: ImageChange
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 307cd559b999da77cbb31dea6f638545c99cfdf0
+    app.quarkus.io/build-timestamp: 2022-09-20 - 14:31:32 +0000
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: openshift-quickstart
+spec: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 307cd559b999da77cbb31dea6f638545c99cfdf0
+    app.quarkus.io/build-timestamp: 2022-09-20 - 14:31:32 +0000
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: openshift-quickstart
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: openshift-quickstart-view
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: view
+subjects:
+  - kind: ServiceAccount
+    name: openshift-quickstart
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: openjdk-17
+spec:
+  dockerImageRepository: registry.access.redhat.com/ubi8/openjdk-17
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 307cd559b999da77cbb31dea6f638545c99cfdf0
+    app.quarkus.io/build-timestamp: 2022-09-20 - 14:31:32 +0000
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: openshift-quickstart
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 307cd559b999da77cbb31dea6f638545c99cfdf0
+    app.quarkus.io/build-timestamp: 2022-09-20 - 14:31:32 +0000
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: openshift-quickstart
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: openshift-quickstart
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 307cd559b999da77cbb31dea6f638545c99cfdf0
+    app.quarkus.io/build-timestamp: 2022-09-20 - 14:31:32 +0000
+  labels:
+    app.kubernetes.io/name: openshift-quickstart
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: openshift-quickstart
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: openshift-quickstart:1.0.0-SNAPSHOT
+  source:
+    binary: {}
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: openjdk-17:1.14

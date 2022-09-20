@@ -1,0 +1,173 @@
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 4baba7a70191f20c6e149b26b9493b2ea6493134
+    app.quarkus.io/build-timestamp: 2022-09-19 - 15:06:43 +0000
+  labels:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: config
+spec:
+  replicas: 1
+  selector:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  template:
+    metadata:
+      annotations:
+        app.openshift.io/vcs-url: <<unknown>>
+        app.quarkus.io/commit-id: 4baba7a70191f20c6e149b26b9493b2ea6493134
+        app.quarkus.io/build-timestamp: 2022-09-19 - 15:06:43 +0000
+      labels:
+        app.openshift.io/runtime: quarkus
+        app.kubernetes.io/name: config
+        app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    spec:
+      containers:
+        - env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: JAVA_APP_JAR
+              value: /deployments/config-1.0.0-SNAPSHOT-runner.jar
+          image: mvavrik/config:1.0.0-SNAPSHOT
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/live
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+          name: config
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 10
+      serviceAccountName: config
+  triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - config
+        from:
+          kind: ImageStreamTag
+          name: config:1.0.0-SNAPSHOT
+      type: ImageChange
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 4baba7a70191f20c6e149b26b9493b2ea6493134
+    app.quarkus.io/build-timestamp: 2022-09-19 - 15:06:43 +0000
+  labels:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: config
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  type: ClusterIP
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 4baba7a70191f20c6e149b26b9493b2ea6493134
+    app.quarkus.io/build-timestamp: 2022-09-19 - 15:06:43 +0000
+  labels:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: config
+spec: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 4baba7a70191f20c6e149b26b9493b2ea6493134
+    app.quarkus.io/build-timestamp: 2022-09-19 - 15:06:43 +0000
+  labels:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: config
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: config-view
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: view
+subjects:
+  - kind: ServiceAccount
+    name: config
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+  name: openjdk-11
+spec:
+  dockerImageRepository: registry.access.redhat.com/ubi8/openjdk-11
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  annotations:
+    app.openshift.io/vcs-url: <<unknown>>
+    app.quarkus.io/commit-id: 4baba7a70191f20c6e149b26b9493b2ea6493134
+    app.quarkus.io/build-timestamp: 2022-09-19 - 15:06:43 +0000
+  labels:
+    app.kubernetes.io/name: config
+    app.kubernetes.io/version: 1.0.0-SNAPSHOT
+    app.openshift.io/runtime: quarkus
+  name: config
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: config:1.0.0-SNAPSHOT
+  source:
+    binary: {}
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: openjdk-11:1.14
